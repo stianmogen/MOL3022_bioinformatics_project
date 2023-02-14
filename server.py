@@ -1,3 +1,4 @@
+from keras.preprocessing import sequence
 import numpy as np
 from typing import Dict, Any
 
@@ -5,6 +6,7 @@ from typing import Dict, Any
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from predict import predict
 
 #import keras
 
@@ -41,6 +43,7 @@ class Sequence(BaseModel):
     sequence: str
 
 @app.post("/predict")
-async def predict(data: Sequence):
-    return { "ans": data.sequence }
+async def use_predict(data: Sequence):
+    ans = predict(data.sequence)
+    return { "ans": ans }
 
