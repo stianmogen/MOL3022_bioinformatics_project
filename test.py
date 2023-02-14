@@ -13,7 +13,15 @@ def f1(y_true, y_pred):
     return 1
 
 def seq2ngrams(seqs, n=3):
-    return np.array([list(seq[i:i + n] for i in range(len(seq))) for seq in seqs], dtype=object)
+    num_seqs = len(seqs)
+    # Tokenizer need 1 dim input
+    # In case of same length on all input sequences we need to initialize
+    # array first in order to prevent np from creating a second dimension
+    # We need seqs on format (x, ) and not (x, y)
+    ngrams = np.empty(num_seqs, dtype=object)
+    for s in range(num_seqs):
+        ngrams[s] = ([seqs[s][i:i + n] for i in range(len(seqs[s]))])
+    return ngrams
 
 
 with open('tokenizer/tokenizer_encoder.json') as te:
@@ -29,8 +37,8 @@ model.compile(metrics=["accuracy", f1])
 
 maxlen_seq = 128
 
-# Second element in input list is left as an empty string
-input_list = ['MQVWPIEGIKKFETLSYLPPLTVEDLLKQIEYLLRSKWVPCLEFSKVGFVY', '']
+
+input_list = ["EEDPDLKAAIQESLREAEEA"]
 input_grams = seq2ngrams(input_list)
 
 print(input_grams)
