@@ -11,8 +11,8 @@ from keras.models import Model
 from keras.preprocessing.text import Tokenizer
 from keras.utils.np_utils import to_categorical
 # from keras.utils import to_categorical
-from keras_preprocessing.sequence import pad_sequences
-# from keras.utils import pad_sequences
+# from keras_preprocessing.sequence import pad_sequences
+from keras.utils import pad_sequences
 from sklearn.model_selection import train_test_split
 
 df = pd.read_csv('data/2018-06-06-ss.cleaned.csv')
@@ -66,7 +66,7 @@ model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["ac
 X_train, X_test, y_train, y_test = train_test_split(input_data, target_data, test_size=.4, random_state=0)
 seq_train, seq_test, target_train, target_test = train_test_split(input_seqs, target_seqs, test_size=.4, random_state=0)
 
-model.fit(X_train, y_train, batch_size=128, epochs=5, validation_data=(X_test, y_test), verbose=1)
+model.fit(X_train, y_train, batch_size=128, epochs=20, validation_data=(X_test, y_test), verbose=1)
 model.save('./model')
 
 tokenizer_encoder_json = tokenizer_encoder.to_json()
