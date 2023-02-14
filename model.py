@@ -35,7 +35,6 @@ tokenizer_decoder.fit_on_texts(target_seqs)
 target_data = tokenizer_decoder.texts_to_sequences(target_seqs)
 target_data = pad_sequences(target_data, maxlen=maxlen_seq, padding='post')
 target_data = to_categorical(target_data)
-input_data.shape, target_data.shape
 
 
 n_words = len(tokenizer_encoder.word_index) + 1
