@@ -14,12 +14,12 @@ from keras.metrics import categorical_accuracy
 from keras import backend  as K
 import tensorflow as tf
 
-df = pd.read_csv('2018-06-06-ss.cleaned.csv')
+df = pd.read_csv('data/2018-06-06-ss.cleaned.csv')
 df.len.hist(bins=100)
 print(df.shape)
 
 def seq2ngrams(seqs, n=3):
-    return np.array([[seq[i:i+n] for i in range(len(seq))] for seq in seqs])
+    return np.array([[seq[i:i+n] for i in range(len(seq))] for seq in seqs], dtype=object)
 
 maxlen_seq = 128
 input_seqs, target_seqs = df[['seq', 'sst3']][(df.len <= maxlen_seq) & (~df.has_nonstd_aa)].values.T
