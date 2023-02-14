@@ -1,8 +1,9 @@
 import json
 
 import numpy as np
-from keras_preprocessing.sequence import pad_sequences
-from keras_preprocessing.text import tokenizer_from_json
+#from keras_preprocessing.sequence import pad_sequences
+from keras.utils import pad_sequences
+from keras.preprocessing.text import tokenizer_from_json
 from tensorflow import keras
 import tensorflow as tf
 
@@ -28,7 +29,8 @@ model.compile(metrics=["accuracy", f1])
 
 maxlen_seq = 128
 
-input_list = ['EEDPDLKAAIQESLREAEEA', 'LSEEDLQFAERYLRSYYHPT']
+# Second element in input list is left as an empty string
+input_list = ['MQVWPIEGIKKFETLSYLPPLTVEDLLKQIEYLLRSKWVPCLEFSKVGFVY', '']
 input_grams = seq2ngrams(input_list)
 
 print(input_grams)
@@ -40,7 +42,7 @@ print(pred)
 
 pred = tokenizer_decoder.sequences_to_texts(pred.numpy())
 
-print(pred)
+print(pred[0].replace(" ", ""))
 
 
 
