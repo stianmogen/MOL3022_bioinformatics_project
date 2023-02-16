@@ -6,7 +6,7 @@ from typing import Dict, Any
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from predict import predict
+from .predict import predict
 
 #import keras
 
