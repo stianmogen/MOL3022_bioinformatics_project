@@ -1,6 +1,7 @@
 import io
 import json
 
+import keras.callbacks
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -8,8 +9,9 @@ from keras import backend as K
 from keras.preprocessing.text import Tokenizer
 from keras.utils.np_utils import to_categorical
 # from keras.utils import to_categorical
-from keras_preprocessing.sequence import pad_sequences
-# from keras.utils import pad_sequences
+# from keras_preprocessing.sequence import pad_sequences
+from keras.utils import pad_sequences
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
 from model import create_model
@@ -66,7 +68,7 @@ def q3_acc(y_true, y_pred):
 input_csv_file = 'data/2018-06-06-ss.cleaned.csv'
 MAX_SEQUENCE_LENGTH = 128
 BATCH_SIZE = 128
-EPOCHS = 5
+EPOCHS = 25
 VAL_SIZE = 0.4
 RANDOM_STATE = 0
 
@@ -98,8 +100,39 @@ model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["ac
 x_train, x_val, y_train, y_val = train_test_split(input_data, target_data, test_size=VAL_SIZE,
                                                   random_state=RANDOM_STATE)
 
-model.fit(x_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=(x_val, y_val), verbose=1)
+checkpoints = keras.callbacks.ModelCheckpoint("protein.h5", save_best_only=True)
+history = model.fit(x_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=(x_val, y_val), verbose=1, callbacks=[checkpoints])
 model.save('./model')
 
 save_tokenizer(file_path="tokenizer/input_tokenizer.json", tokenizer=input_tokenizer)
 save_tokenizer(file_path="tokenizer/target_tokenizer.json", tokenizer=target_tokenizer)
+
+model_history = pd.DataFrame(history.history)
+model_history['epoch'] = history.epoch
+
+fig, ax = plt.subplots(1, figsize=(8,6))
+num_epochs = model_history.shape[0]
+
+print(model_history)
+
+ax.plot(np.arange(0, num_epochs), model_history["accuracy"],
+        label="Training accuracy"),
+ax.plot(np.arange(0, num_epochs), model_history["q3_acc"],
+        label="Training q3 accuracy")
+ax.plot(np.arange(0, num_epochs), model_history["val_accuracy"],
+        label="Validation accuracy")
+ax.plot(np.arange(0, num_epochs), model_history["val_q3_acc"],
+        label="Validation q3 accuracy")
+ax.legend()
+
+plt.tight_layout()
+plt.show()
+
+ax.plot(np.arange(0, num_epochs), model_history["loss"],
+        label="Training loss"),
+ax.plot(np.arange(0, num_epochs), model_history["val_loss"],
+        label="Validation loss")
+ax.legend()
+
+plt.tight_layout()
+plt.show()

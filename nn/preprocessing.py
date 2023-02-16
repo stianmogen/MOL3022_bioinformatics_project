@@ -6,7 +6,7 @@ df = pd.read_csv('../data/2018-06-06-ss.cleaned.csv')
 df.len.hist(bins=100)
 print(df.shape)
 
-def seq2ngrams(seqs, n=3):
+def generate_n_grams(seqs, n=3):
     # seq.ljust(128)[:128] pads each seq to 128 characters with blank lines at end, to avoid inhomogeneous shape error
     return np.array([[seq[i:i+n] for i in range(len(seq.ljust(128)[:128]))] for seq in seqs])
 
@@ -16,7 +16,7 @@ maxlen_seq = 128
 selected_rows = df[(df['len'] <= maxlen_seq) & (~df['has_nonstd_aa'])]
 input_seqs = selected_rows['seq'].values
 target_seqs = selected_rows['sst3'].values
-input_grams = seq2ngrams(input_seqs)
+input_grams = generate_n_grams(input_seqs)
 print(len(input_seqs))
 print(input_grams)
 
