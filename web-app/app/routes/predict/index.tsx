@@ -22,20 +22,14 @@ export const action = async ({ request, params }: ActionArgs) => {
 
         }
 
-        //return PREDICTION_API(request).predict(data);
-        return fetch(`${API_URL}predict`, {
-          method: 'POST',
-          headers: myHeaders,
-          body: raw,
-          redirect: 'follow'
-        })
+        return PREDICTION_API(request).predict(data);
     }
 
 };
 export default function Predict() {
     const actionData = useActionData<typeof action>();
   return (
-    <div className='grid justify-start m-10 grid-cols-1 bg-primary gap-4 bg-secondary xl:grid-cols-2'>
+    <div className='grid justify-start m-10 grid-cols-1 bg-primary gap-4 bg-primary xl:grid-cols-2'>
         <Paper>
         <div className='grid gap-12'>
         <h1 className='text-2xl bg-secondary'> Input a protein sequence</h1>
