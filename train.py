@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras import backend as K
+from keras.losses import CategoricalCrossentropy
 from keras.preprocessing.text import Tokenizer
 from keras.utils.np_utils import to_categorical
 # from keras.utils import to_categorical
@@ -12,7 +13,7 @@ from keras_preprocessing.sequence import pad_sequences
 # from keras.utils import pad_sequences
 from sklearn.model_selection import train_test_split
 
-from model import create_model
+from model import create_transformer_model, create_lstm_model
 
 
 def sequence_to_ngrams(seqs, n=3):
@@ -56,48 +57,63 @@ def preprocess(data, max_sequence_length, char_level=False, is_target=False):
 
 
 def q3_acc(y_true, y_pred):
-    """This method measures the accuracy of the m"""
+    '''
+    This method calculates acc after masking padding (class = 0)
+    :param y_true: True value of y. One-hot vector
+    :param y_pred: Predicted value
+    :return:
+    '''
     y = tf.argmax(y_true, axis=-1)
     y_ = tf.argmax(y_pred, axis=-1)
     mask = tf.greater(y, 0)
     return K.cast(K.equal(tf.boolean_mask(y, mask), tf.boolean_mask(y_, mask)), K.floatx())
 
 
+def masked_loss(y_true, y_pred):
+    '''
+    This method calculates loss after masking predictions where true labels where padding (class 0)
+    :param y_true: True value of y. One hot vector
+    :param y_pred: Predicted value
+    :return:
+    '''
+    # Calculate the loss for each item in the batch.
+    loss_fn = CategoricalCrossentropy(reduction='none')
+    loss = loss_fn(y_true, y_pred)
+
+    y = tf.argmax(y_true, axis=-1)
+
+    # Mask off the losses on padding.
+    mask = tf.cast(y != 0, loss.dtype)
+    loss *= mask
+
+    # Return the total.
+    return tf.reduce_sum(loss) / tf.reduce_sum(mask)
+
+
 input_csv_file = 'data/2018-06-06-ss.cleaned.csv'
 MAX_SEQUENCE_LENGTH = 128
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 EPOCHS = 5
 VAL_SIZE = 0.4
 RANDOM_STATE = 0
 
-input_sequences, target_sequences = get_data(file_path=input_csv_file,
-                                             max_sequence_length=MAX_SEQUENCE_LENGTH,
-                                             input_column='seq',
-                                             target_column='sst3')
+input_sequences, target_sequences = get_data(file_path=input_csv_file, max_sequence_length=MAX_SEQUENCE_LENGTH, input_column='seq', target_column='sst3')
 
 input_ngrams = sequence_to_ngrams(input_sequences)
 
-input_data, input_tokenizer = preprocess(data=input_ngrams,
-                                         max_sequence_length=MAX_SEQUENCE_LENGTH)
-
-target_data, target_tokenizer = preprocess(data=target_sequences,
-                                           max_sequence_length=MAX_SEQUENCE_LENGTH,
-                                           char_level=True,
-                                           is_target=True)
-
+input_data, input_tokenizer = preprocess(data=input_ngrams, max_sequence_length=MAX_SEQUENCE_LENGTH)
+target_data, target_tokenizer = preprocess(data=target_sequences, max_sequence_length=MAX_SEQUENCE_LENGTH, char_level=True, is_target=True)
 
 num_words = len(input_tokenizer.word_index) + 1
 num_tags = len(target_tokenizer.word_index) + 1
 
-model = create_model(max_sequence_length=MAX_SEQUENCE_LENGTH,
-                     num_words=num_words,
-                     num_tags=num_tags)
+model = create_lstm_model(max_sequence_length=MAX_SEQUENCE_LENGTH, num_words=num_words, num_tags=num_tags)
 
-model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy", q3_acc])
+print(model.summary())
 
-x_train, x_val, y_train, y_val = train_test_split(input_data, target_data, test_size=VAL_SIZE,
-                                                  random_state=RANDOM_STATE)
+model.compile(optimizer="rmsprop", loss=masked_loss, metrics=[q3_acc])
 
+x_train, x_val, y_train, y_val = train_test_split(input_data, target_data, test_size=VAL_SIZE, random_state=RANDOM_STATE)
 model.fit(x_train, y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=(x_val, y_val), verbose=1)
 model.save('./model')
 
