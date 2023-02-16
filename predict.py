@@ -12,7 +12,7 @@ import tensorflow as tf
 def f1(y_true, y_pred):
     return 1
 
-def seq2ngrams(seqs, n=3):
+def generate_n_grams(seqs, n=3):
     num_seqs = len(seqs)
     # Tokenizer need 1 dim input
     # In case of same length on all input sequences we need to initialize
@@ -41,7 +41,7 @@ def predict(sequence):
 
 
     input_list = [sequence]
-    input_grams = seq2ngrams(input_list)
+    input_grams = generate_n_grams(input_list)
 
     print(input_grams)
     input_data = tokenizer_encoder.texts_to_sequences(input_grams)
