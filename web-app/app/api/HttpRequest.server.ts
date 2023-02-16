@@ -1,8 +1,12 @@
 import { API_URL } from '~/constant';
-import type { HTTPError, Options } from 'ky';
-import ky from 'ky';
+import axios from 'axios';
+
+
 
 import type { ActionResponse } from '~/types';
+
+const axiosInstance = axios.create();
+
 
 
 export type HttpRequestOptions = {
@@ -13,63 +17,53 @@ export class HttpRequest {
   url: string;
   withAuth: boolean;
   request: Request;
-  api: typeof ky;
+  apiUrl = API_URL;
 
   constructor(url: string, request: Request, withAuth = true, options: HttpRequestOptions = {}) {
     this.url = url;
     this.request = request;
     this.withAuth = withAuth;
 
-    this.api = ky.create({ prefixUrl: options?.baseUrl || API_URL });
-  }
-  async #getHeaders(): Promise<Headers> {
-    const headers = new Headers();
-    return headers;
   }
 
-
-  async #handleRequestError(error: Error) {
-      console.log(error);
-    if (error.name === 'HTTPError') {
-      const httpError = error as HTTPError;
-      const errorJson = (await httpError.response.json()) as Omit<ActionResponse, 'ok'> | undefined;
-      if (typeof errorJson?.detail === 'string' || typeof errorJson?.violations === 'object') {
-        return Promise.reject({
-          ok: false,
-          detail: errorJson.detail || undefined,
-          violations: errorJson.violations || undefined,
-        } as ActionResponse);
+async #handleRequestError(error: any) {
+    if (error.response) {
+      if (error.response.status === 401) {
+        return Promise.reject({ detail: 'Du har blitt logget ut på grunn av for lang tid med inaktivitet' } as ActionResponse);
       }
-      return Promise.reject({ ok: false, detail: `${httpError.response.status} - ${httpError.response.statusText}` } as ActionResponse);
+      if (typeof error.response.data?.detail === 'string') {
+        return Promise.reject({ detail: error.response.data.detail } as ActionResponse);
+      }
+      return Promise.reject({ detail: `${error.response.status} - ${error.response.statusText}` } as ActionResponse);
+    } else if (error.request) {
+      return Promise.reject({ detail: 'Forespørselen tok for lang tid å fullføre. Sjekk at internettilkoblingen din virker.' } as ActionResponse);
+    } else if (error.message) {
+      return Promise.reject({ detail: error.message } as ActionResponse);
     }
-    if (error.message) {
-      return Promise.reject({ ok: false, detail: error.message });
-    }
-    return Promise.reject({ ok: false, detail: 'Something went wrong' });
+    return Promise.reject({ detail: 'Noe gikk aldeles galt' } as ActionResponse);
   }
+  async get<ReturnType>() {
+      return axiosInstance
+          .get<ReturnType>(`${this.apiUrl}/${this.url}`)
+          .then((data) => data.data)
+          .catch(this.#handleRequestError);}
 
-  async get<ReturnType>(searchParams?: URLSearchParams) {
-    return this.fetch<ReturnType>({ method: 'get', searchParams });
+    async post<ReturnType>(data?: any) {
+        return axiosInstance
+          .post<ReturnType>(`${this.apiUrl}/${this.url}`, data, {})
+          .then((data) => data.data)
+          .catch(this.#handleRequestError);
   }
-
-  async post<ReturnType>(data?: unknown) {
-    return this.fetch<ReturnType>({ method: 'post', json: data });
-  }
-
   async put<ReturnType>(data?: unknown) {
-    return this.fetch<ReturnType>({ method: 'put', json: data });
-  }
+     return axiosInstance
+          .put<ReturnType>(`${this.apiUrl}/${this.url}`, data)
+          .then((data) => data.data)
+          .catch(this.#handleRequestError);  }
 
   async delete<ReturnType>() {
-    return this.fetch<ReturnType>({ method: 'delete' });
-  }
+      return axiosInstance
+          .delete<ReturnType>(`${this.apiUrl}/${this.url}`)
+          .then((data) => data.data)
+          .catch(this.#handleRequestError);}
 
-  async fetch<ReturnType>(options?: Options) {
-    return this.api(this.url, {
-        headers: await this.#getHeaders(),
-      ...options,
-    })
-      .json<ReturnType>()
-      .catch(this.#handleRequestError);
-  }
 }

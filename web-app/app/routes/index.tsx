@@ -1,39 +1,23 @@
 import type { ActionArgs } from '@remix-run/node';
-import { useActionData } from '@remix-run/react';
+import { Link, useActionData } from '@remix-run/react';
+import Paper from '~/components/Paper';
 
 
-export const action = async ({ request, params }: ActionArgs) => {
-      const formData = await request.formData();
-      if (request.method === 'POST') {
-          const res = await fetch('http://localhost:8000/', {
-              method: 'POST',
-              body: JSON.stringify({ "string":formData.get("sequence") })
-          })
-          return res.json();
-      }
-
-};
 export default function Index() {
-    const actionData = useActionData<typeof action>();
   return (
-    <div>
-        <h1> Input the a protein sequence</h1>
-        <form method='post'>
-
-        <label className='mb-2 italic' htmlFor='company'>
-              Sequence
-            </label>
-            <input
-              className='block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-500'
-              defaultValue={""}
-              id='sequence'
-              name='sequence'
-              required
-              type='text'
-            />
-        <button type="submit">Predict</button>
-        </form>
-        { actionData?.data && <div>{actionData.data}</div>}
+    <div className='grid justify-center	p-8 m-44'>
+        <Paper >
+             <h1 className='text-white text-6xl'>Welcome to the protein predicter</h1>
+             <p className='text-2xl'>
+                This tool allows you to predict the secondary structure of a protein sequence
+             </p>
+             <p className='text-2xl'>
+                The tool was created for the sucject MOL3022 at NTNU
+             </p>
+             <nav>
+                <Link className='mt-0 mb-2 text-xl font-medium leading-tight' to="/predict">Go to prediction page</Link>{" "}
+            </nav>
+        </Paper>
     </div>
 
   );

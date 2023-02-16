@@ -10,6 +10,7 @@ export type ActionResponse = {
 
 export type PredictionResponse = {
     ans: string;
+    sequence: string;
 }
 export type PredictionRequest = {
     sequence: string;
