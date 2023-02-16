@@ -44,25 +44,25 @@ async #handleRequestError(error: any) {
   }
   async get<ReturnType>() {
       return axiosInstance
-          .get<ReturnType>(`${this.apiUrl}${this.url}`)
+          .get<ReturnType>(`${this.apiUrl}/${this.url}`)
           .then((data) => data.data)
           .catch(this.#handleRequestError);}
 
     async post<ReturnType>(data?: any) {
         return axiosInstance
-          .post<ReturnType>(`${this.apiUrl}${this.url}`, data, {})
+          .post<ReturnType>(`${this.apiUrl}/${this.url}`, data, {})
           .then((data) => data.data)
           .catch(this.#handleRequestError);
   }
   async put<ReturnType>(data?: unknown) {
      return axiosInstance
-          .put<ReturnType>(`${this.apiUrl}${this.url}`, data)
+          .put<ReturnType>(`${this.apiUrl}/${this.url}`, data)
           .then((data) => data.data)
           .catch(this.#handleRequestError);  }
 
   async delete<ReturnType>() {
       return axiosInstance
-          .delete<ReturnType>(`${this.apiUrl}${this.url}`)
+          .delete<ReturnType>(`${this.apiUrl}/${this.url}`)
           .then((data) => data.data)
           .catch(this.#handleRequestError);}
 
