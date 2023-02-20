@@ -8,16 +8,16 @@ from keras.layers import LSTM, Embedding, Dense, TimeDistributed, Bidirectional,
 from keras.models import Model
 
 
-def create_lstm_model(num_words, num_tags, lstm_layers=1, dropout_rate=.1, attention=True):
+def create_lstm_model(num_words, num_tags, hidden_size=64, lstm_layers=1, dropout_rate=.1, attention=True):
     input_tensor = Input(shape=(None,))
     x = Embedding(input_dim=num_words, output_dim=128)(input_tensor)
 
     # Add specified number of LSTM layers
     for i in range(lstm_layers):
         if i == 0:
-            x = Bidirectional(LSTM(units=64, return_sequences=True))(x)
+            x = Bidirectional(LSTM(units=hidden_size, return_sequences=True))(x)
         else:
-            x = Bidirectional(LSTM(units=64, return_sequences=True))(x)
+            x = Bidirectional(LSTM(units=hidden_size, return_sequences=True))(x)
         x = Dropout(dropout_rate)(x)
 
     if attention:
@@ -26,7 +26,7 @@ def create_lstm_model(num_words, num_tags, lstm_layers=1, dropout_rate=.1, atten
         attention = Activation('softmax')(attention)
         attention = Lambda(lambda x: x[0] * x[1])([x, attention])
         attention = Lambda(lambda x: K.sum(x, axis=1))(attention)
-        attention = RepeatVector(2 * 64)(attention)
+        attention = RepeatVector(2 * hidden_size)(attention)
         attention = Permute([2, 1])(attention)
 
         # Concatenate attention vector with LSTM output
