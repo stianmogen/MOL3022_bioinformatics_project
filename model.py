@@ -1,45 +1,82 @@
 import numpy as np
+import tensorflow as tf
 from keras import Input
+from keras import backend as K
 from keras.layers import LSTM, Embedding, Dense, TimeDistributed, Bidirectional, Dropout, MultiHeadAttention, \
-    LayerNormalization, Conv1D, GlobalMaxPooling1D, Conv2D, GlobalMaxPooling2D
+    LayerNormalization, Concatenate, Activation, Lambda, \
+    RepeatVector, Permute
 from keras.models import Model
 
 
-def create_lstm_model(max_sequence_length, num_words, num_tags):
-    input_tensor = Input(shape=(max_sequence_length,))
-    x = Embedding(input_dim=num_words, output_dim=128, input_length=max_sequence_length)(input_tensor)
-    x = Bidirectional(LSTM(units=64, return_sequences=True, recurrent_dropout=0.1))(x)
+def create_lstm_model(num_words, num_tags, lstm_layers=1, dropout_rate=.1, attention=True):
+    input_tensor = Input(shape=(None,))
+    x = Embedding(input_dim=num_words, output_dim=128)(input_tensor)
+
+    # Add specified number of LSTM layers
+    for i in range(lstm_layers):
+        if i == 0:
+            x = Bidirectional(LSTM(units=64, return_sequences=True))(x)
+        else:
+            x = Bidirectional(LSTM(units=64, return_sequences=True))(x)
+        x = Dropout(dropout_rate)(x)
+
+    if attention:
+        # Attention mechanism
+        attention = Dense(1, activation='tanh')(x)
+        attention = Activation('softmax')(attention)
+        attention = Lambda(lambda x: x[0] * x[1])([x, attention])
+        attention = Lambda(lambda x: K.sum(x, axis=1))(attention)
+        attention = RepeatVector(2 * 64)(attention)
+        attention = Permute([2, 1])(attention)
+
+        # Concatenate attention vector with LSTM output
+        x = Concatenate(axis=-1)([x, attention])
+
     y = TimeDistributed(Dense(num_tags, activation="softmax"))(x)
     model = Model(input_tensor, y)
     return model
 
 
-def create_transformer_model(max_sequence_length, num_words, num_tags, dropout_rate=0.1,
-                             num_heads=8, d_model=128, dense_size=64):
-    input_tensor = Input(shape=((max_sequence_length, )))
+def positional_encoding(seq_length, d_model):
+    position = K.arange(0, seq_length, dtype=K.floatx())
+    position = K.expand_dims(position, 1)
+    div_term = K.exp(K.arange(0, d_model, 2, dtype=K.floatx()) * -(np.log(10000.0) / d_model))
+    div_term = K.expand_dims(div_term, 0)
+    angles = K.dot(position, div_term)
+    pos_encoding = K.concatenate([K.sin(angles), K.cos(angles)], axis=-1)
+    pos_encoding = K.expand_dims(pos_encoding, 0)
+    return pos_encoding
+
+
+def create_transformer_model(num_words, num_tags, num_layers=2, d_model=64, num_heads=8, dff=512, dropout_rate=0.1):
+    inputs = Input(shape=(None,), name='inputs')
 
     # Embedding layer
-    x = Embedding(input_dim=num_words, output_dim=d_model, input_length=max_sequence_length)(input_tensor)
+    embedding_layer = tf.keras.layers.Embedding(num_words, d_model)
+    x = embedding_layer(inputs)
 
-    # Positional encoding
-    pos_encoding = np.array([
-        [pos / np.power(10000, 2. * i / d_model) for i in range(d_model)]
-        if pos != 0 else np.zeros(d_model) for pos in range(max_sequence_length)])
+    # Positional encoding layer
+    seq_length = tf.shape(inputs)[1]
+    pos_encoding = positional_encoding(seq_length, d_model)
     x = x + pos_encoding
-
-    # Dropout
     x = Dropout(rate=dropout_rate)(x)
 
-    # Multi-head attention
-    x = MultiHeadAttention(num_heads=num_heads, key_dim=d_model)(x, x)
-    x = LayerNormalization(epsilon=1e-6)(x)
+    # Transformer layers
+    for i in range(num_layers):
+        # Multi-head attention layer
+        attention_output = MultiHeadAttention(num_heads=num_heads, key_dim=d_model)(x, x, attention_mask=None)
+        attention_output = Dropout(rate=dropout_rate)(attention_output)
+        attention_output = LayerNormalization(epsilon=1e-6)(x + attention_output)
 
-    # Feed-forward network
-    y = Dense(units=dense_size, activation='relu')(x)
-    y = Dropout(rate=dropout_rate)(y)
-    y = TimeDistributed(Dense(units=num_tags, activation='softmax'))(y)
+        # Position-wise feedforward layer
+        feedforward_output = Dense(units=dff, activation='relu')(attention_output)
+        feedforward_output = Dense(units=d_model)(feedforward_output)
+        feedforward_output = Dropout(rate=dropout_rate)(feedforward_output)
+        x = LayerNormalization(epsilon=1e-6)(attention_output + feedforward_output)
 
-    # Model
-    model = Model(input_tensor, y)
+    # Output layer
+    outputs = TimeDistributed(Dense(units=num_tags, activation='softmax'), name='outputs')(x)
 
+    # Create model
+    model = Model(inputs=[inputs], outputs=[outputs])
     return model
