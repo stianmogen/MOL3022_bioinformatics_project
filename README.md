@@ -25,6 +25,8 @@ git clone git@github.com:stianmogen/MOL3022_bioinformatics_project.git
 
 #### Backend 
 
+Make sure you have the necessary packages installed to run the application, these are defined in requirements.txt. 
+<br><br>
 To setup the server, run the following command inside the MOL3022_bioinformatics_project/ folder: 
 ```angular2html
 uvicorn server:app --reload
