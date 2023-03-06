@@ -1,8 +1,8 @@
 import json
 
 import numpy as np
-from keras_preprocessing.sequence import pad_sequences
-# from keras.utils import pad_sequences
+# from keras_preprocessing.sequence import pad_sequences
+from keras.utils import pad_sequences
 from keras.preprocessing.text import tokenizer_from_json
 from tensorflow import keras
 import tensorflow as tf
@@ -33,7 +33,7 @@ def predict(sequence):
         data = json.load(td)
         tokenizer_decoder = tokenizer_from_json(data)
 
-    model = keras.models.load_model('./model/Q3_LSTM_1L/', custom_objects={'f1': f1}, compile=False)
+    model = keras.models.load_model('./models/Q3_LSTM_1L/protein.h5', custom_objects={'f1': f1}, compile=False)
     model.compile(metrics=["accuracy", f1])
 
     maxlen_seq = 128
@@ -53,4 +53,8 @@ def predict(sequence):
     return pred[0].replace(" ", "")
 
 
-print(predict("CCC"))
+
+
+
+if __name__ == '__main__':
+    print(predict("CCC"))
