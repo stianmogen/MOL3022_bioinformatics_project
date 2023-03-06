@@ -6,7 +6,7 @@ WORKDIR /code
 #
 COPY ./requirements.txt /code/requirements.txt
 COPY ./predict.py /code/predict.py
-COPY ./model/ /code/model
+COPY ./models/ /code/models
 COPY ./tokenizer/ /code/tokenizer
 
 #
