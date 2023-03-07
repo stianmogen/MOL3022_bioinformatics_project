@@ -19,7 +19,13 @@ If the deployment is not running, or if you want to test for yourself locally, f
 
 Cloning the repository can be done with the following commands: 
 ```angular2html
+
+http:
+
 git clone https://github.com/stianmogen/MOL3022_bioinformatics_project.git
+
+ssh:
+
 git clone git@github.com:stianmogen/MOL3022_bioinformatics_project.git
 ```
 
@@ -37,8 +43,8 @@ uvicorn server:app --reload
 To start the application, run yarn install followed by yarn run dev from inside the web-app folder
 ```angular2html
 cd web-app
-yarn
-yarn run dev
+npm install
+npm run dev
 ```
 Go to http://localhost:3000/ and test out the application.
 
