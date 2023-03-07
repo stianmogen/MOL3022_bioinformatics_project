@@ -11,7 +11,7 @@ Stian Fjæran Mogen: stianfmo@stud.ntnu.no
 
 The application is deployed for your convenience at the following url: https://mol-3022-bioinformatics-project.vercel.app/predict
 <br>
-If you are the only current user of the web page, you will have to wait a couple of seconds for the server to start up. On the prediction page, wait for the "Wating for the prediction api to wake up" to dissapear and start predicting. 
+If you are the only current user of the web page, you will have to wait a couple of seconds for the server to start up. On the prediction page, wait 10-20 seconds on the "Wating for the prediction api to wake up" page, and then refresh. The prompt will dissapear and you can start predicting. 
 
 ### Setup and running locally
 
