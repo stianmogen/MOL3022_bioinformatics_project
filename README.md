@@ -51,3 +51,7 @@ Go to http://localhost:3000/ and test out the application.
 #### Training the model
 
 To train new models, simply run train.py with your preffered hyperparameters. 
+
+#### Results from training 
+
+If you want to see output from the training without running it yourself, or just want to access the Kaggle notebook, it is avaiable here: https://www.kaggle.com/code/simojens/notebook212b492bbb
