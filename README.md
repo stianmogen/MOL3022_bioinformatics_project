@@ -19,7 +19,6 @@ If the deployment is not running, or if you want to test for yourself locally, f
 
 Cloning the repository can be done with the following commands: 
 ```angular2html
-
 http:
 
 git clone https://github.com/stianmogen/MOL3022_bioinformatics_project.git
@@ -27,6 +26,21 @@ git clone https://github.com/stianmogen/MOL3022_bioinformatics_project.git
 ssh:
 
 git clone git@github.com:stianmogen/MOL3022_bioinformatics_project.git
+```
+
+To run this project you need to have [python](https://www.python.org/downloads/) installed on your computer.
+
+To install requirements open a terminal in project root and write the following:
+```angular2html
+python -m pip install --upgrade pip
+
+pip install virtualenv
+
+virtualenv venv
+
+source venv/bin/activate
+
+pip install -r requirements.txt
 ```
 
 #### Backend 
