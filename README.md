@@ -18,54 +18,73 @@ If you are the only current user of the web page, you will have to wait a couple
 If the deployment is not running, or if you want to test for yourself locally, follow these instructions: 
 
 Cloning the repository can be done with the following commands: 
+
+#### HTTP
 ```angular2html
-http:
-
 git clone https://github.com/stianmogen/MOL3022_bioinformatics_project.git
-
-ssh:
-
+```
+#### SSH
+```angular2html
 git clone git@github.com:stianmogen/MOL3022_bioinformatics_project.git
 ```
 
-To run this project you need to have [python](https://www.python.org/downloads/) installed on your computer.
+#### Dataset
 
-To install requirements open a terminal in project root and write the following:
+Download [2018-06-06-ss.cleaned.csv](https://www.kaggle.com/datasets/alfrandom/protein-secondary-structure?select=2018-06-06-ss.cleaned.csv) and add it to a folder named 'data' in the project root directory.
+
+
+To run this project you must have [python](https://www.python.org/downloads/) correctly installed on your computer.
+
+#### Conda
+
+We recommend using and [anaconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) for this project.
+To create environment with necessary dependencies open a terminal in project root and write the following:
+```angular2html
+conda env create -f environment.yml
+conda activate conda-env
+```
+
+Now you can run commands in terminal. To train the model yourself run the following:
+```angular2html
+python3 train.py
+```
+
+
+To use the newly created environment in Pycharm IDE go to:
+
+Pycharm -> Settings -> Project MOL3022_bioinformatics_project -> Python interpreter -> Add interpreter -> Add local interpreter -> Conda environment -> Use existing environment -> Select 'conda-env' from the dropdown
+
+#### Pip
+If you want to use pip instead of conda is important that you have python3.8 installed. This is necessary to use tensorflow.
 ```angular2html
 python -m pip install --upgrade pip
 
 pip install virtualenv
 
-virtualenv venv
+virtualenv -p python3.8 venv
 
 source venv/bin/activate
 
 pip install -r requirements.txt
 ```
-
 #### Backend 
 
-Make sure you have the necessary packages installed to run the application, these are defined in requirements.txt. 
-<br><br>
-To setup the server, run the following command inside the MOL3022_bioinformatics_project/ folder: 
+To setup the backend server, run the following command inside project root folder: 
 ```angular2html
 uvicorn server:app --reload
 ```
 
 #### Fronted
 
-To start the application, run yarn install followed by yarn run dev from inside the web-app folder
+To start the frontend application, open a new terminal and run the following:
 ```angular2html
 cd web-app
-npm install
-npm run dev
+yarn install
+yarn run dev
 ```
 Go to http://localhost:3000/ and test out the application.
 
-#### Training the model
 
-To train new models, simply run train.py with your preffered hyperparameters. 
+### Training Results
 
-#### Results from training 
-
-If you want to see output from the training without running it yourself, or just want to access the Kaggle notebook, it is avaiable here: https://www.kaggle.com/code/simojens/notebook212b492bbb
+If you want to see output from the training without running it yourself, please visit the [Kaggle notebook](https://www.kaggle.com/code/simojens/notebook212b492bbb).
